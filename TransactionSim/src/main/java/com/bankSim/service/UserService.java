@@ -9,6 +9,7 @@ import com.bankSim.model.Account;
 import com.bankSim.repos.AccountRepository;
 import com.bankSim.repos.LoanRepository;
 import com.bankSim.model.Loan;
+import com.bankSim.repos.UserRepository;
 
 public class UserService {
 
@@ -17,7 +18,19 @@ public class UserService {
 
     @Autowired
     private LoanRepository loanRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
     
+    public User CreateUser(String firstName, String lastName, String email, String userName, String password, String userId){
+        
+    //     if (userRepository.findByEmail(email).isPresent()) {
+    //         throw new IllegalArgumentException("Username already exists");
+    //     }
+    //     return new User(userName, password, firstName, lastName);
+            return null;
+    }
 
     public List<Account> getAllUserAccounts(User user){
         return accountRepository.findAllById(user.getAccountIds());

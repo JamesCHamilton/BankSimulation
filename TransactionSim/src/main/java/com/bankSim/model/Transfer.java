@@ -7,12 +7,13 @@ import java.util.UUID;
 
 import com.bankSim.utils.Status;
 
+
 @Entity
 
 public class Transfer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
+    private Long id;
 
     @Column(nullable = false)
     private Long fromAccountId;
@@ -29,19 +30,19 @@ public class Transfer {
     private String message;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
+    private String transferType;
 
     public Transfer() {
-        this.id = UUID.randomUUID().toString();
         this.status = Status.QUEUED;
         this.createdAt = LocalDateTime.now();
     }
 
-    public Transfer(Long fromAccountId, Long toAccountId, BigDecimal amount) {
+    public Transfer(Long fromAccountId, Long toAccountId, BigDecimal amount, String transferType) {
         this();
         this.fromAccountId = fromAccountId;
         this.toAccountId = toAccountId;
         this.amount = amount;
+        this.transferType = transferType;
     }
 
     @PrePersist
@@ -54,6 +55,7 @@ public class Transfer {
         updatedAt = LocalDateTime.now();
     }
 
+    public Long getId() {return id;}
     public BigDecimal getAmount() {return amount;}
     public String getStatus() {return status;}
     public void setStatus(String status) {this.status = status;}
@@ -64,6 +66,8 @@ public class Transfer {
     public LocalDateTime getCreatedAt() {return createdAt;}
     public LocalDateTime getUpdatedAt() {return updatedAt;}
     public void setUpdatedAt(LocalDateTime updatedAt) {this.updatedAt = updatedAt;} 
+    public String getTransferType() {return transferType;}
+
 }
 
 

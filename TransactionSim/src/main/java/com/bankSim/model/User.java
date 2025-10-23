@@ -17,7 +17,6 @@ public class User {
     @GeneratedValue(strategy =  GenerationType.IDENTITY)
     private Long id;
 
-    private String userId;
     private String userName;
     private String password;
     private String firstName;
@@ -27,8 +26,7 @@ public class User {
 
     protected User() {}
 
-    User(String userId, String userName, String password, String firstName, String lastName, List<Long> accountIds, List<Long> loanIds) {
-        this.userId = userId;
+    User(String userName, String password, String firstName, String lastName) {
         this.userName = userName;
         this.password = password;
         this.firstName = firstName;
@@ -38,7 +36,7 @@ public class User {
 
     }
 
-    public String getUserId() {return userId;}
+    public Long getUserId() {return id;}
     public String getUserName() {return userName;}
     public String getPassword() {return password;}
     public String getFirstName() {return firstName;}
