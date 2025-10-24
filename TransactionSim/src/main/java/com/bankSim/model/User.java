@@ -46,6 +46,7 @@ public class User {
     public List<Long> getAccountIds() {return accountIds;}
     public List<Long> getLoanIds() {return loanIds;}
     public String getEmail() {return email;}
+    
 
 
 

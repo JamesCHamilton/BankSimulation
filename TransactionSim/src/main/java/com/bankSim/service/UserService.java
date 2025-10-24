@@ -24,12 +24,13 @@ public class UserService {
     @Autowired
     private final UserRepository userRepository;
 
-     @Autowired 
+    @Autowired 
     public UserService(AccountRepository accountRepository, LoanRepository loanRepository, UserRepository userRepository) {
         this.userRepository = userRepository;
         this.loanRepository = loanRepository;
         this.accountRepository = accountRepository;
     }
+    
 
     public UserCreationResponse CreateUser(UserCreationRequest request){
         

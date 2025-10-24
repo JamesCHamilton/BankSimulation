@@ -45,5 +45,7 @@ public class Account {
     public String getAccountType() {return accountType;}
     public String getBank() {return bank;}
     public Integer getCreditScore() {return creditScore;}
+    public void setBalance(BigDecimal balance) {this.balance = balance;}
+    public void setCreditScore(Integer creditScore) {this.creditScore = creditScore;}
 
 }

@@ -3,6 +3,7 @@ package com.bankSim.dto.responses;
 
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 public class TransferResponse {
@@ -11,6 +12,7 @@ public class TransferResponse {
     private BigDecimal amount;
     private String message;
     private String transferType;
+    @JsonProperty("timestamp") private LocalDateTime updatedAt;
 
 
     public TransferResponse(
@@ -25,6 +27,7 @@ public class TransferResponse {
         this.amount = amount;
         this.message = message;
         this.transferType = transferType;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public BigDecimal getAmount() {
@@ -37,5 +40,7 @@ public class TransferResponse {
         return transactionId;
     }public String getTransferType() {
         return transferType;
+    }public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 }
