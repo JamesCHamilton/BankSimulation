@@ -9,8 +9,8 @@ public class TransferRequest {
     private final Long fromAccountId;
     private final Long toAccountId;
     private final BigDecimal amount;
-    private Long transferId;
-    private String transferType;
+    private final Long transferId;
+    private final String transferType;
     @JsonProperty("timestamp") private final LocalDateTime timestamp;
 
     public TransferRequest(
@@ -20,6 +20,8 @@ public class TransferRequest {
         @JsonProperty("transferAmount")BigDecimal amount,
         @JsonProperty("transferType")String transferType) {
 
+        this.transferId = transferId;
+        this.transferType = transferType;
         this.fromAccountId = fromAccountId;
         this.toAccountId = toAccountId;
         this.amount = amount;

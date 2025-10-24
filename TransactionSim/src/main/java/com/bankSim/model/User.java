@@ -21,16 +21,18 @@ public class User {
     private String password;
     private String firstName;
     private String lastName;
+    private String email;
     private List<Long> accountIds;
     private List<Long> loanIds;
 
     protected User() {}
 
-    User(String userName, String password, String firstName, String lastName) {
+    public User(String userName, String email, String password, String firstName, String lastName) {
         this.userName = userName;
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.email = email;
         this.accountIds = new ArrayList<>();
         this.loanIds = new ArrayList<>();
 
@@ -43,6 +45,7 @@ public class User {
     public String getLastName() {return lastName;}
     public List<Long> getAccountIds() {return accountIds;}
     public List<Long> getLoanIds() {return loanIds;}
+    public String getEmail() {return email;}
 
 
 

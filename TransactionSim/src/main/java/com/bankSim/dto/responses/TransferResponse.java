@@ -3,6 +3,8 @@ package com.bankSim.dto.responses;
 
 
 import java.math.BigDecimal;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 public class TransferResponse {
     private String status;
     private Long transactionId;
@@ -11,7 +13,13 @@ public class TransferResponse {
     private String transferType;
 
 
-    public TransferResponse(String status, Long transactionId, BigDecimal amount, String transferType,String message) {
+    public TransferResponse(
+    @JsonProperty("status") String status, 
+    @JsonProperty("transactionId")Long transactionId, 
+    @JsonProperty("transferAmount") BigDecimal amount, 
+    @JsonProperty("transferType") String transferType,
+    @JsonProperty("TransferMessage") String message) {
+        
         this.status = status;
         this.transactionId = transactionId;
         this.amount = amount;
@@ -27,5 +35,7 @@ public class TransferResponse {
         return status;
     }public Long getTransactionId() {
         return transactionId;
-    }   
+    }public String getTransferType() {
+        return transferType;
+    }
 }

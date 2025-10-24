@@ -5,31 +5,52 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.bankSim.model.User;
+import com.bankSim.dto.requests.UserCreationRequest;
 import com.bankSim.model.Account;
 import com.bankSim.repos.AccountRepository;
 import com.bankSim.repos.LoanRepository;
 import com.bankSim.model.Loan;
 import com.bankSim.repos.UserRepository;
+import com.bankSim.dto.responses.UserCreationResponse;
 
 public class UserService {
 
     @Autowired
-    private AccountRepository accountRepository;
+    private final AccountRepository accountRepository;
 
     @Autowired
-    private LoanRepository loanRepository;
+    private final LoanRepository loanRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    
-    public User CreateUser(String firstName, String lastName, String email, String userName, String password, String userId){
+     @Autowired 
+    public UserService(AccountRepository accountRepository, LoanRepository loanRepository, UserRepository userRepository) {
+        this.userRepository = userRepository;
+        this.loanRepository = loanRepository;
+        this.accountRepository = accountRepository;
+    }
+
+    public UserCreationResponse CreateUser(UserCreationRequest request){
         
-    //     if (userRepository.findByEmail(email).isPresent()) {
-    //         throw new IllegalArgumentException("Username already exists");
-    //     }
-    //     return new User(userName, password, firstName, lastName);
-            return null;
+        if (userRepository.findById(request.getUserId()).isPresent()) {
+           throw new IllegalArgumentException("User already exists");
+        }
+         User user = new User(
+            request.getUserName(),
+            request.getEmail(),
+            request.getPassword(),
+            request.getFirstName(),
+            request.getLastName()
+            );
+
+        userRepository.save(user);
+
+        return new UserCreationResponse(user.getUserId(), user.getUserName(), user.getEmail(), "User created successfully");
+    }
+
+    public void deleteUser(Long userId){
+        userRepository.deleteById(userId);
     }
 
     public List<Account> getAllUserAccounts(User user){

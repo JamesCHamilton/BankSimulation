@@ -3,7 +3,6 @@ package com.bankSim.model;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import com.bankSim.utils.Status;
 

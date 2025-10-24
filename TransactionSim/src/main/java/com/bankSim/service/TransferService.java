@@ -22,7 +22,6 @@ import com.bankSim.utils.TransferTypes;
 import jakarta.transaction.Transactional;
 
 import java.util.Optional;
-import java.util.UUID;
 
 
 
@@ -53,12 +52,25 @@ public class TransferService {
             request.getTransferType()
         );
 
-        
-        transferRepository.save(transfer);
+        try{
+
+            transfer.setUpdatedAt(LocalDateTime.now());
+            transferRepository.save(transfer);
+            
+        }catch(Exception e){
+            return new TransferResponse(Status.FAILED, null, null, request.getTransferType() , "Error initializing transfer: " + e.getMessage());
+        }
 
         // add to queue
         try {
-            transferQueue.enqueue(new TransferTask(transfer.getId(), transfer.getFromAccountId(), transfer.getToAccountId(), transfer.getAmount()));
+            transferQueue.enqueue(new TransferTask(
+                transfer.getId(), 
+                transfer.getFromAccountId(), 
+                transfer.getToAccountId(), 
+                transfer.getAmount(), 
+                transfer.getTransferType()
+                ));
+            
             return new TransferResponse(Status.QUEUED, transfer.getId(), null, request.getTransferType() , "Transfer was queued");
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -83,8 +95,74 @@ public class TransferService {
     }
 
     public void processTransferTask(TransferTask task){
-        Optional<Account> fromOpt = accountRepository.findById(task.getFromAccountId());
-        Optional<Account> toOpt = accountRepository.findById(task.getToAccountId());
+        Optional<Account> fromAccount = accountRepository.findById(task.getFromAccountId());
+        Optional<Account> toAccount = accountRepository.findById(task.getToAccountId());
+        Optional<Transfer> transferOpt = transferRepository.findById(task.getTransferId());
+
+        if(!fromAccount.isPresent() || !toAccount.isPresent() || !transferOpt.isPresent()){
+            transferOpt.ifPresent(transfer -> {
+                transfer.setStatus(Status.FAILED);
+                transfer.setMessage("One or more accounts not found.");
+                transferRepository.save(transfer);
+            });
+            return;
+        }
+
+        Account fromAcc = fromAccount.get();
+        Account toAcc = toAccount.get();
+        Transfer transfer = transferOpt.get();
+
+        try{
+            switch (task.getTransferType()) {
+                case TransferTypes.INPERSONWITHDRAW:
+                    if (fromAcc.getBalance().compareTo(task.getAmount()) < 0) {
+                        transfer.setStatus(Status.FAILED);
+                        transfer.setMessage("Insufficient funds.");
+                        transferRepository.save(transfer);
+                        return;
+                    }else{
+                        fromAcc.setBalance(fromAcc.getBalance().subtract(task.getAmount()));
+                        accountRepository.save(fromAcc);
+
+                        transfer.setStatus(Status.SUCCESS);
+                        transfer.setMessage("Withdrawal successful.");
+                        transferRepository.save(transfer);
+                    }
+                    break;
+                
+                case TransferTypes.INPERSONDEPOSIT:
+                    toAcc.setBalance(toAcc.getBalance().add(task.getAmount()));
+                    accountRepository.save(toAcc);
+
+                    transfer.setStatus(Status.SUCCESS);
+                    transfer.setMessage("Deposit successful.");
+                    transferRepository.save(transfer);
+                    break;
+
+                case TransferTypes.ACCOUNTtoACCOUNTTRANSFER:
+                    if (fromAcc.getBalance().compareTo(task.getAmount()) < 0) {
+                        transfer.setStatus(Status.FAILED);
+                        transfer.setMessage("Insufficient funds for account-to-account transfer.");
+                        transferRepository.save(transfer);
+                        return;
+                    }else{
+                        fromAcc.setBalance(fromAcc.getBalance().subtract(task.getAmount()));
+                        toAcc.setBalance(toAcc.getBalance().add(task.getAmount()));
+                        accountRepository.save(fromAcc);
+                        accountRepository.save(toAcc);
+                        transfer.setStatus(Status.SUCCESS);
+                        transfer.setMessage("Account-to-account transfer successful.");
+                        transferRepository.save(transfer);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }catch(Exception e){
+            transfer.setStatus(Status.FAILED);
+            transfer.setMessage("Error processing transfer: " + e.getMessage());
+            transferRepository.save(transfer);
+        }
 
 
     }
