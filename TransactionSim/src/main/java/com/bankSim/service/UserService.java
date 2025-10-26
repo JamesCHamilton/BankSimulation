@@ -3,6 +3,8 @@ package com.bankSim.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.bankSim.model.User;
 import com.bankSim.dto.requests.UserCreationRequest;
@@ -11,6 +13,7 @@ import com.bankSim.repos.AccountRepository;
 import com.bankSim.repos.LoanRepository;
 import com.bankSim.model.Loan;
 import com.bankSim.repos.UserRepository;
+import com.bankSim.dto.responses.LoginInReponse;
 import com.bankSim.dto.responses.UserCreationResponse;
 
 public class UserService {
@@ -31,16 +34,19 @@ public class UserService {
         this.accountRepository = accountRepository;
     }
     
-
     public UserCreationResponse CreateUser(UserCreationRequest request){
         
         if (userRepository.findById(request.getUserId()).isPresent()) {
            throw new IllegalArgumentException("User already exists");
         }
-         User user = new User(
+        
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(16);
+        final String hashedPassword = encoder.encode(request.getPassword());
+
+        User user = new User(
             request.getUserName(),
             request.getEmail(),
-            request.getPassword(),
+            hashedPassword,
             request.getFirstName(),
             request.getLastName()
             );
@@ -48,6 +54,20 @@ public class UserService {
         userRepository.save(user);
 
         return new UserCreationResponse(user.getUserId(), user.getUserName(), user.getEmail(), "User created successfully");
+    }
+
+    public LoginInReponse loginUser(String email, String password){
+        User user = userRepository.findByEmail(email);
+        if(user == null){
+            return new LoginInReponse("User not found", HttpStatus.NOT_FOUND);
+        }
+
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(16);
+        if(encoder.matches(password, user.getPassword())){
+            return new LoginInReponse("Login successful", HttpStatus.OK);
+        } else {
+            return new LoginInReponse("Invalid crede    ntials", HttpStatus.UNAUTHORIZED);
+        }
     }
 
     public void deleteUser(Long userId){
