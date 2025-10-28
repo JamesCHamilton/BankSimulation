@@ -14,8 +14,6 @@ public class Loan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String loanId;
-    private String userId;
     private double princaipalAmount;
     private double interestRate;
     private int termMonths;
@@ -23,16 +21,13 @@ public class Loan {
 
     protected Loan() {}
 
-    public Loan(String loanId, String userId, double balance,double princaipalAmount, double interestRate, int termMonths) {
-        this.loanId = loanId;
-        this.userId = userId;
+    public Loan (double princaipalAmount, double balance, double interestRate, int termMonths) {
         this.balance = balance;
         this.interestRate = interestRate;
         this.termMonths = termMonths;
     }
 
-    public String getLoanId() {return loanId;}
-    public String getUserId() {return userId;}
+    public Long getLoanId() {return id;}
     public double getInterestRate() {return interestRate;}
     public int getTermMonths() {return termMonths;}
     public double getBalance() {return balance;}

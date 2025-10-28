@@ -36,7 +36,7 @@ public class TransferQueueWorker {
                         Thread.currentThread().interrupt();
                         break;
                     }catch(Exception e){
-                        // Log exception
+                        // Log exceptnion
                         System.err.println("Error processing transfer task: " + e.getMessage());
                         Thread.currentThread().interrupt();
                     }

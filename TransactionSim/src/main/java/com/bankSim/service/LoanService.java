@@ -6,6 +6,13 @@ import com.bankSim.repos.LoanRepository;
 import com.bankSim.repos.AccountRepository;
 import com.bankSim.repos.UserRepository;
 import com.bankSim.repos.TransferRepository;
+import com.bankSim.dto.requests.LoanPaymentRequest;
+
+
+import java.math.BigDecimal;
+import java.util.Optional;
+
+import com.bankSim.model.Loan;
 
 public class LoanService {
     
@@ -26,8 +33,19 @@ public class LoanService {
         this.transferRepository = transferRepository;
     }
 
+    public void loanPayment(LoanPaymentRequest request, String loanId){
+        Optional<Loan> loan = loanRepository.findById(request.getLoanId());
+        if(loan.isEmpty()){
+            throw new IllegalArgumentException("Loan not found");
+        }
 
-    
+        
+
+        
+        
+        
+    }
+
     
 
     
