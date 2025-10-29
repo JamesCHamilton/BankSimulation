@@ -1,6 +1,5 @@
 package com.bankSim.dto.requests;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonProperty;

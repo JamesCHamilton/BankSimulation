@@ -5,7 +5,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import com.bankSim.repos.AccountRepository;
 import com.bankSim.repos.TransferRepository;
-import com.bankSim.repos.UserRepository;
 import com.bankSim.queue.TransferQueue;
 import com.bankSim.model.Account;
 import com.bankSim.model.Transfer;
