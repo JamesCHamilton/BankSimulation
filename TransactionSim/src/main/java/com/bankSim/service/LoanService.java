@@ -5,11 +5,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.bankSim.repos.LoanRepository;
 import com.bankSim.repos.AccountRepository;
 import com.bankSim.repos.UserRepository;
+import com.bankSim.utils.Status;
 import com.bankSim.repos.TransferRepository;
 import com.bankSim.dto.requests.LoanPaymentRequest;
+import com.bankSim.dto.responses.LoanPaymentReponse;
+import com.bankSim.exceptions.UnauthorizedAccessException;
 
-
-import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import com.bankSim.model.Loan;
@@ -33,20 +35,45 @@ public class LoanService {
         this.transferRepository = transferRepository;
     }
 
-    public void loanPayment(LoanPaymentRequest request, String loanId){
+    public LoanPaymentReponse loanPayment(Long userId, LoanPaymentRequest request) throws UnauthorizedAccessException{
         Optional<Loan> loan = loanRepository.findById(request.getLoanId());
         if(loan.isEmpty()){
             throw new IllegalArgumentException("Loan not found");
         }
 
-        
+        double paymentAmount = request.getPaymentAmount();
+        if(paymentAmount <= 0){
+            throw new IllegalArgumentException("Payment amount must be greater than zero");
+        }
 
+        Loan existingLoan = loan.get();
         
+        if(!existingLoan.getUserId().equals(userId)){
+            throw new UnauthorizedAccessException("User does not own the loan");
+        }
+        
+        double newBalance = existingLoan.getBalance() - paymentAmount;
+        if(newBalance < 0){
+            throw new IllegalArgumentException("Payment amount exceeds outstanding balance" + existingLoan.getBalance());
+        }
+        
+        else if(newBalance == 0){
+            deleteLoan(existingLoan.getLoanId());
+            return new LoanPaymentReponse(Status.SUCCESS, existingLoan.getLoanId(), 0.0, "Loan fully paid and closed");
+        }
+
+        existingLoan.setBalance(newBalance);
+        existingLoan.setLastPaidAt(LocalDateTime.now());
+
+        loanRepository.save(existingLoan);
+
+        return new LoanPaymentReponse(Status.SUCCESS, existingLoan.getLoanId(), newBalance, "Loan payment successful");
         
         
     }
 
-    
-
+    private void deleteLoan(Long loanId){
+        loanRepository.deleteById(loanId);
+    }
     
 }

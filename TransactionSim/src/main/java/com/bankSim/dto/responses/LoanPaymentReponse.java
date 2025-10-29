@@ -9,12 +9,12 @@ public class LoanPaymentReponse {
     private final String status;
     private final Long loanId;
     private final String message;
-    private final BigDecimal remainingBalance;
+    private final double remainingBalance;
     private final LocalDateTime paidAt;
     public LoanPaymentReponse(
         @JsonProperty("status")String status,
         @JsonProperty("loanId")Long loanId,
-        @JsonProperty("remainingBalance")BigDecimal remainingBalance,
+        @JsonProperty("remainingBalance")double remainingBalance,
         @JsonProperty("message")String message
         ) {
         this.status = status;
@@ -27,7 +27,7 @@ public class LoanPaymentReponse {
         return loanId;
     }public String getMessage() {
         return message;
-    }public BigDecimal getRemainingBalance() {
+    }public double getRemainingBalance() {
         return remainingBalance;
     }public String getStatus() {
         return status;

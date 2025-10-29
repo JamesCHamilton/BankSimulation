@@ -5,6 +5,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import com.bankSim.repos.AccountRepository;
 import com.bankSim.repos.TransferRepository;
+import com.bankSim.repos.UserRepository;
 import com.bankSim.queue.TransferQueue;
 import com.bankSim.model.Account;
 import com.bankSim.model.Transfer;
@@ -16,7 +17,7 @@ import java.time.LocalDateTime;
 import java.math.BigDecimal;
 import com.bankSim.utils.Status;
 import com.bankSim.utils.TransferTypes;
-
+import com.bankSim.exceptions.UnauthorizedAccessException;
 
 import jakarta.transaction.Transactional;
 
@@ -38,7 +39,15 @@ public class TransferService {
         this.accountRepository = accountRepository;
     }
 
-    public TransferResponse initializeTransfer(TransferRequest request){
+    public TransferResponse initializeTransfer(long userId, TransferRequest request) throws UnauthorizedAccessException {
+        Optional<Account> fromAccountOpt = accountRepository.findById(request.getFromAccountId());
+        if(!fromAccountOpt.isPresent()){
+            return new TransferResponse(Status.FAILED, null, null, request.getTransferType() , "From account not found.");
+        }
+        Account fromAccount = fromAccountOpt.get();
+        if (!fromAccount.getUserId().equals(userId)) {
+            throw new UnauthorizedAccessException("User does not own the from account.");
+        }
 
         if (request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
             return new TransferResponse(Status.FAILED, request.getTransferId(), null, null , "Transfer amount must be greater than zero.");
@@ -59,6 +68,9 @@ public class TransferService {
         }catch(Exception e){
             return new TransferResponse(Status.FAILED, null, null, request.getTransferType() , "Error initializing transfer: " + e.getMessage());
         }
+
+        fromAccount.addTransaction(transfer.getId());
+        accountRepository.save(fromAccount);
 
         // add to queue
         try {

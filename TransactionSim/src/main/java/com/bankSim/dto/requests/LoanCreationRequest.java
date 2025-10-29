@@ -16,7 +16,7 @@ public class LoanCreationRequest {
     private final String loanPaymentSchedule;
     
     public LoanCreationRequest(
-        @JsonProperty("userId")Long loanId,
+        @JsonProperty("loanId")Long loanId,
         @JsonProperty("amount")BigDecimal amount,
         @JsonProperty("termInMonths")int termInMonths,
         @JsonProperty("interestRate")double interestRate,
