@@ -9,6 +9,7 @@ import com.bankSim.utils.Status;
 import com.bankSim.repos.TransferRepository;
 import com.bankSim.dto.requests.LoanPaymentRequest;
 import com.bankSim.dto.responses.LoanPaymentReponse;
+import com.bankSim.exceptions.ResourceNotFoundException;
 import com.bankSim.exceptions.UnauthorizedAccessException;
 
 import java.time.LocalDateTime;
@@ -35,10 +36,10 @@ public class LoanService {
         this.transferRepository = transferRepository;
     }
 
-    public LoanPaymentReponse loanPayment(Long userId, LoanPaymentRequest request) throws UnauthorizedAccessException{
+    public LoanPaymentReponse loanPayment(Long userId, LoanPaymentRequest request) throws UnauthorizedAccessException, ResourceNotFoundException{
         Optional<Loan> loan = loanRepository.findById(request.getLoanId());
         if(loan.isEmpty()){
-            throw new IllegalArgumentException("Loan not found");
+            throw new ResourceNotFoundException("Loan not found");
         }
 
         double paymentAmount = request.getPaymentAmount();
@@ -68,8 +69,6 @@ public class LoanService {
         loanRepository.save(existingLoan);
 
         return new LoanPaymentReponse(Status.SUCCESS, existingLoan.getLoanId(), newBalance, "Loan payment successful");
-        
-        
     }
 
     private void deleteLoan(Long loanId){

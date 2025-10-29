@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.math.BigDecimal;
 import com.bankSim.utils.Status;
 import com.bankSim.utils.TransferTypes;
+import com.bankSim.exceptions.ResourceNotFoundException;
 import com.bankSim.exceptions.UnauthorizedAccessException;
 
 import jakarta.transaction.Transactional;
@@ -38,10 +39,10 @@ public class TransferService {
         this.accountRepository = accountRepository;
     }
 
-    public TransferResponse initializeTransfer(long userId, TransferRequest request) throws UnauthorizedAccessException {
+    public TransferResponse initializeTransfer(long userId, TransferRequest request) throws UnauthorizedAccessException, ResourceNotFoundException {
         Optional<Account> fromAccountOpt = accountRepository.findById(request.getFromAccountId());
         if(!fromAccountOpt.isPresent()){
-            return new TransferResponse(Status.FAILED, null, null, request.getTransferType() , "From account not found.");
+            throw new ResourceNotFoundException("From account not found");
         }
         Account fromAccount = fromAccountOpt.get();
         if (!fromAccount.getUserId().equals(userId)) {
@@ -94,7 +95,11 @@ public class TransferService {
         try{
             TransferTask task = transferQueue.dequeue();
             if(task != null){
-                processTransferTask(task);
+                try {
+                    processTransferTask(task);
+                } catch (ResourceNotFoundException e) {
+                    System.err.println("Resource not found during transfer: " + e.getMessage());
+                }
             }
         }
         catch(InterruptedException e){
@@ -104,18 +109,13 @@ public class TransferService {
         }
     }
 
-    public void processTransferTask(TransferTask task){
+    public void processTransferTask(TransferTask task) throws ResourceNotFoundException{
         Optional<Account> fromAccount = accountRepository.findById(task.getFromAccountId());
         Optional<Account> toAccount = accountRepository.findById(task.getToAccountId());
         Optional<Transfer> transferOpt = transferRepository.findById(task.getTransferId());
 
         if(!fromAccount.isPresent() || !toAccount.isPresent() || !transferOpt.isPresent()){
-            transferOpt.ifPresent(transfer -> {
-                transfer.setStatus(Status.FAILED);
-                transfer.setMessage("One or more accounts not found.");
-                transferRepository.save(transfer);
-            });
-            return;
+            throw new ResourceNotFoundException("Account or Transfer not found");
         }
 
         Account fromAcc = fromAccount.get();

@@ -59,14 +59,15 @@ public class UserService {
     public LoginInReponse loginUser(String email, String password){
         User user = userRepository.findByEmail(email);
         if(user == null){
-            return new LoginInReponse("User not found", HttpStatus.NOT_FOUND);
+            return new LoginInReponse(null, "User not found", HttpStatus.NOT_FOUND);
         }
 
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(16);
         if(encoder.matches(password, user.getPassword())){
-            return new LoginInReponse("Login successful", HttpStatus.OK);
+            //need to implement JWT token 
+            return new LoginInReponse(null, "Login successful", HttpStatus.OK);
         } else {
-            return new LoginInReponse("Invalid crede    ntials", HttpStatus.UNAUTHORIZED);
+            return new LoginInReponse(null, "Invalid credentials", HttpStatus.UNAUTHORIZED);
         }
     }
 
