@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.math.BigDecimal;
 import com.bankSim.utils.Status;
 import com.bankSim.utils.TransferTypes;
+import com.bankSim.exceptions.InsufficientFundsException;
 import com.bankSim.exceptions.ResourceNotFoundException;
 import com.bankSim.exceptions.UnauthorizedAccessException;
 
@@ -99,6 +100,8 @@ public class TransferService {
                     processTransferTask(task);
                 } catch (ResourceNotFoundException e) {
                     System.err.println("Resource not found during transfer: " + e.getMessage());
+                } catch (InsufficientFundsException e) {
+                    System.err.println("Insufficient funds for transfer: " + e.getMessage());
                 }
             }
         }
@@ -109,7 +112,7 @@ public class TransferService {
         }
     }
 
-    public void processTransferTask(TransferTask task) throws ResourceNotFoundException{
+    public void processTransferTask(TransferTask task) throws ResourceNotFoundException, InsufficientFundsException{
         Optional<Account> fromAccount = accountRepository.findById(task.getFromAccountId());
         Optional<Account> toAccount = accountRepository.findById(task.getToAccountId());
         Optional<Transfer> transferOpt = transferRepository.findById(task.getTransferId());
@@ -129,7 +132,8 @@ public class TransferService {
                         transfer.setStatus(Status.FAILED);
                         transfer.setMessage("Insufficient funds.");
                         transferRepository.save(transfer);
-                        return;
+                        throw new InsufficientFundsException("Insufficient Funds for this transaction");
+
                     }else{
                         fromAcc.setBalance(fromAcc.getBalance().subtract(task.getAmount()));
                         accountRepository.save(fromAcc);
@@ -154,7 +158,7 @@ public class TransferService {
                         transfer.setStatus(Status.FAILED);
                         transfer.setMessage("Insufficient funds for account-to-account transfer.");
                         transferRepository.save(transfer);
-                        return;
+                        throw new InsufficientFundsException("Insufficient funds for account-to-account transfer.");
                     }else{
                         fromAcc.setBalance(fromAcc.getBalance().subtract(task.getAmount()));
                         toAcc.setBalance(toAcc.getBalance().add(task.getAmount()));

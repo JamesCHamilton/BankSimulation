@@ -6,6 +6,9 @@ import com.bankSim.repos.LoanRepository;
 import com.bankSim.repos.AccountRepository;
 import com.bankSim.repos.UserRepository;
 import com.bankSim.utils.Status;
+
+import jakarta.transaction.Transactional;
+
 import com.bankSim.repos.TransferRepository;
 import com.bankSim.dto.requests.LoanPaymentRequest;
 import com.bankSim.dto.responses.LoanPaymentReponse;
@@ -36,6 +39,7 @@ public class LoanService {
         this.transferRepository = transferRepository;
     }
 
+    @Transactional
     public LoanPaymentReponse loanPayment(Long userId, LoanPaymentRequest request) throws UnauthorizedAccessException, ResourceNotFoundException{
         Optional<Loan> loan = loanRepository.findById(request.getLoanId());
         if(loan.isEmpty()){

@@ -7,12 +7,12 @@ import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 public class TransferResponse {
-    private String status;
-    private Long transactionId;
-    private BigDecimal amount;
-    private String message;
-    private String transferType;
-    @JsonProperty("timestamp") private LocalDateTime updatedAt;
+    private final String status;
+    private final Long transactionId;
+    private final BigDecimal amount;
+    private final String message;
+    private final String transferType;
+    @JsonProperty("timestamp") private final LocalDateTime updatedAt;
 
 
     public TransferResponse(
