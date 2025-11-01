@@ -1,7 +1,7 @@
 package com.bankSim.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.stereotype.Service;
 
 import com.bankSim.dto.tasks.TransferTask;
 import com.bankSim.exceptions.ResourceNotFoundException;
@@ -13,7 +13,7 @@ import jakarta.annotation.PostConstruct;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-
+@Service
 public class TransferQueueWorker {
     
     @Autowired

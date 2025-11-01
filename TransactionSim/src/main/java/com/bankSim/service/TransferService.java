@@ -1,7 +1,7 @@
 package com.bankSim.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 
 import com.bankSim.repos.AccountRepository;
 import com.bankSim.repos.TransferRepository;
@@ -25,7 +25,7 @@ import jakarta.transaction.Transactional;
 import java.util.Optional;
 
 
-
+@Service
 public class TransferService {
 
     private final TransferRepository transferRepository;
@@ -91,7 +91,6 @@ public class TransferService {
     }
 
     @Transactional
-    @Scheduled(fixedDelay = 3000)
     public void processTransfer(){
         try{
             TransferTask task = transferQueue.dequeue();
@@ -103,6 +102,8 @@ public class TransferService {
                 } catch (InsufficientFundsException e) {
                     System.err.println("Insufficient funds for transfer: " + e.getMessage());
                 }
+            }else{
+                Thread.sleep(3000);
             }
         }
         catch(InterruptedException e){

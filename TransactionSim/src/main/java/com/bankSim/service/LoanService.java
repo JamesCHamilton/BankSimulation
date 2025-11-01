@@ -1,6 +1,7 @@
 package com.bankSim.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.bankSim.repos.LoanRepository;
 import com.bankSim.repos.AccountRepository;
@@ -20,6 +21,7 @@ import java.util.Optional;
 
 import com.bankSim.model.Loan;
 
+@Service
 public class LoanService {
     
     @Autowired
