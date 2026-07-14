@@ -1,11 +1,6 @@
 package com.bankSim.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -28,10 +23,11 @@ public class Account {
     private String accountType;
     private String bank;
     private Long userId;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "account_transactions", joinColumns = @JoinColumn(name = "account_id"))
+    @Column(name = "transaction_id")
     private List<Long> transactions;
-    
-    @ManyToOne
-    private User user;
 
     protected Account() {}
 

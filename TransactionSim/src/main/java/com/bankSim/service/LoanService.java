@@ -21,16 +21,16 @@ import java.util.Optional;
 
 import com.bankSim.model.Loan;
 
+import com.bankSim.dto.requests.LoanCreationRequest;
+import com.bankSim.dto.responses.LoanCreationReponse;
+import com.bankSim.model.User;
+
 @Service
 public class LoanService {
     
-    @Autowired
     private final LoanRepository loanRepository;
-    @Autowired
     private final AccountRepository accountRepository; 
-    @Autowired
     private final UserRepository userRepository;
-    @Autowired
     private final TransferRepository transferRepository;
 
     @Autowired 
@@ -39,6 +39,33 @@ public class LoanService {
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
         this.transferRepository = transferRepository;
+    }
+
+    @Transactional
+    public LoanCreationReponse createLoan(Long userId, LoanCreationRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        double amount = request.getAmount().doubleValue();
+        Loan loan = new Loan(
+            userId,
+            amount,
+            amount,
+            request.getInterestRate(),
+            request.getTermInMonths()
+        );
+
+        loan = loanRepository.save(loan);
+
+        user.getLoanIds().add(loan.getLoanId());
+        userRepository.save(user);
+
+        return new LoanCreationReponse(
+            Status.SUCCESS,
+            loan.getLoanId(),
+            request.getAmount(),
+            "Loan application approved and created successfully"
+        );
     }
 
     @Transactional

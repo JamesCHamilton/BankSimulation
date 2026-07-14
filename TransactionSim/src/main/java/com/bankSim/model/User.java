@@ -3,11 +3,7 @@ package com.bankSim.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "users")
@@ -22,7 +18,15 @@ public class User {
     private String firstName;
     private String lastName;
     private String email;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_accounts", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "account_id")
     private List<Long> accountIds;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_loans", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "loan_id")
     private List<Long> loanIds;
 
     protected User() {}

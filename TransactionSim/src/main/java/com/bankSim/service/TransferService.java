@@ -12,6 +12,13 @@ import com.bankSim.dto.requests.TransferRequest;
 import com.bankSim.dto.responses.TransferResponse;
 import com.bankSim.dto.tasks.TransferTask;
 
+import com.bankSim.repos.UserRepository;
+import com.bankSim.dto.responses.TransferProjection;
+import com.bankSim.model.User;
+import com.bankSim.event.TransferCompletedEvent;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.cache.annotation.CacheEvict;
+
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
 import com.bankSim.utils.Status;
@@ -23,6 +30,8 @@ import com.bankSim.exceptions.UnauthorizedAccessException;
 import jakarta.transaction.Transactional;
 
 import java.util.Optional;
+import java.util.List;
+import java.util.Collections;
 
 
 @Service
@@ -30,14 +39,27 @@ public class TransferService {
 
     private final TransferRepository transferRepository;
     private final AccountRepository accountRepository;    
-
-    @Autowired
-    private TransferQueue transferQueue;
+    private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
+    private final TransferQueue transferQueue;
 
     @Autowired 
-    public TransferService(TransferRepository transferRepository, AccountRepository accountRepository) {
+    public TransferService(TransferRepository transferRepository, AccountRepository accountRepository, UserRepository userRepository, ApplicationEventPublisher eventPublisher, TransferQueue transferQueue) {
         this.transferRepository = transferRepository;
         this.accountRepository = accountRepository;
+        this.userRepository = userRepository;
+        this.eventPublisher = eventPublisher;
+        this.transferQueue = transferQueue;
+    }
+
+    public List<TransferProjection> getTransactionsForUser(long userId, LocalDateTime fromDate, LocalDateTime toDate) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        List<Long> accountIds = user.getAccountIds();
+        if (accountIds == null || accountIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return transferRepository.findTransfersForAccountsInDateRange(accountIds, fromDate, toDate);
     }
 
     public TransferResponse initializeTransfer(long userId, TransferRequest request) throws UnauthorizedAccessException, ResourceNotFoundException {
@@ -113,6 +135,7 @@ public class TransferService {
         }
     }
 
+    @CacheEvict(value = "accounts", allEntries = true)
     public void processTransferTask(TransferTask task) throws ResourceNotFoundException, InsufficientFundsException{
         Optional<Account> fromAccount = accountRepository.findById(task.getFromAccountId());
         Optional<Account> toAccount = accountRepository.findById(task.getToAccountId());
@@ -170,9 +193,13 @@ public class TransferService {
                         transferRepository.save(transfer);
                     }
                     break;
-                default:
-                    break;
             }
+            
+            if (Status.SUCCESS.equals(transfer.getStatus())) {
+                eventPublisher.publishEvent(new TransferCompletedEvent(this, transfer));
+            }
+        }catch(InsufficientFundsException e){
+            throw e;
         }catch(Exception e){
             transfer.setStatus(Status.FAILED);
             transfer.setMessage("Error processing transfer: " + e.getMessage());
